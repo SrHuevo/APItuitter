@@ -14,18 +14,21 @@ import twitter4j.conf.ConfigurationBuilder;
 
 public class Autorizacion {
 	private String[] tokens;
+	private String APIkey;
+	private String APIsecret;
 
-	public Autorizacion() {
+	public Autorizacion(String APIkey, String APIsecret) {
 		tokens = new String[2];
+		this.APIkey = APIkey;
+		this.APIsecret = APIsecret;
 	}
 
 	public Twitter getTuitterTokenLess() {
 		ConfigurationBuilder configBuilder = new ConfigurationBuilder();
-		configBuilder
-				.setDebugEnabled(true)
-				.setOAuthConsumerKey("zrKVQDdDwFlkLZiKTCcJnynXZ")
-				.setOAuthConsumerSecret(
-						"fUpi89OWThIIfNap2zsMq3TvMZZ2MNj9qlEaTjRXyieUllRLn5");
+		System.out.println(APIkey);
+		System.out.println(APIsecret);
+		configBuilder.setDebugEnabled(true).setOAuthConsumerKey(APIkey)
+				.setOAuthConsumerSecret(APIsecret);
 		return new TwitterFactory(configBuilder.build()).getInstance();
 	}
 
@@ -48,20 +51,28 @@ public class Autorizacion {
 		return lectorTeclado.readLine();
 	}
 
-	public String[] getTokens() throws TwitterException, IOException {
+	public String[] getTokens() throws IOException {
 		Twitter OAuthTwitter = getTuitterTokenLess();
 
 		RequestToken requestToken = null;
 		AccessToken accessToken = null;
+		do {
 
-		requestToken = OAuthTwitter.getOAuthRequestToken();
-		String pin = LeePin(requestToken);
-		if (pin.length() > 0) {
-			accessToken = OAuthTwitter.getOAuthAccessToken(requestToken, pin);
-		}
+			try {
+				requestToken = OAuthTwitter.getOAuthRequestToken();
+				String pin = LeePin(requestToken);
+				if (pin.length() > 0) {
+					accessToken = OAuthTwitter.getOAuthAccessToken(
+							requestToken, pin);
+				}
+				tokens[0] = accessToken.getToken();
+				tokens[1] = accessToken.getTokenSecret();
 
-		tokens[0] = accessToken.getToken();
-		tokens[1] = accessToken.getTokenSecret();
+			} catch (TwitterException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} while (accessToken == null);
 		return tokens;
 	}
 

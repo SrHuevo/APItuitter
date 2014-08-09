@@ -19,6 +19,8 @@ public class TwitterMain {
 	private Twitter twitter;
 	private ConfigurationBuilder configBuilder = new ConfigurationBuilder();
 	private ThreadPoolExecutor executor;
+	private String APIkey = "ZsixPZQcERYFKURybOYrp7Wq2";
+	private String APIsecret = "yGUbMvwfVA6mLMc8GWIfzMvaKaHePMQxKWNFSWBI7hm7dCDVhb";
 
 	public void construirTwitter() {
 		executor = (ThreadPoolExecutor)Executors.newFixedThreadPool(10000);
@@ -27,11 +29,11 @@ public class TwitterMain {
 
 		tokens = leerAuth();
 		if (tokens == null) {
-			Autorizacion auth = new Autorizacion();
+			Autorizacion auth = new Autorizacion(APIkey, APIsecret);
 			try {
 				tokens = auth.getTokens();
 				auth.guardaTokens();
-			} catch (TwitterException | IOException e) {
+			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 				System.exit(1);
@@ -39,9 +41,8 @@ public class TwitterMain {
 		}
 		configBuilder
 				.setDebugEnabled(true)
-				.setOAuthConsumerKey("zrKVQDdDwFlkLZiKTCcJnynXZ")
-				.setOAuthConsumerSecret(
-						"fUpi89OWThIIfNap2zsMq3TvMZZ2MNj9qlEaTjRXyieUllRLn5")
+				.setOAuthConsumerKey(APIkey)
+				.setOAuthConsumerSecret(APIsecret)
 				.setOAuthAccessToken(tokens[0])
 				.setOAuthAccessTokenSecret(tokens[1]);
 		twitter = new TwitterFactory(configBuilder.build()).getInstance();
@@ -57,6 +58,7 @@ public class TwitterMain {
 		try {
 			// Apertura del fichero y creacion de BufferedReader
 			archivo = new File("auth_file.txt");
+			System.out.println(archivo.getAbsolutePath());
 			fileR = new FileReader(archivo);
 			lecturaTeclado = new BufferedReader(fileR);
 			// Lectura del fichero
