@@ -18,12 +18,10 @@ public class TwitterMain {
 
 	private Twitter twitter;
 	private ConfigurationBuilder configBuilder = new ConfigurationBuilder();
-	private ThreadPoolExecutor executor;
 	private String APIkey = "ZsixPZQcERYFKURybOYrp7Wq2";
 	private String APIsecret = "yGUbMvwfVA6mLMc8GWIfzMvaKaHePMQxKWNFSWBI7hm7dCDVhb";
 
 	public void construirTwitter() {
-		executor = (ThreadPoolExecutor)Executors.newFixedThreadPool(10000);
 		String[] tokens = new String[2]; // token[0] = Access token; token[1] =
 											// Access token secret
 
@@ -58,7 +56,6 @@ public class TwitterMain {
 		try {
 			// Apertura del fichero y creacion de BufferedReader
 			archivo = new File("auth_file.txt");
-			System.out.println(archivo.getAbsolutePath());
 			fileR = new FileReader(archivo);
 			lecturaTeclado = new BufferedReader(fileR);
 			// Lectura del fichero
@@ -83,20 +80,27 @@ public class TwitterMain {
 		return tokens;
 	}
 
-	// // Recuperar listado de ultimos tweets escritos
-	// Paging pagina = new Paging();
-	// pagina.setCount(50);
-	// ResponseList listado = twitter.getHomeTimeline(pagina);
-	// for (int i = 0; i < listado.size(); i++) {
-	// System.out.println(((Status) listado.get(i)).getText());
-	// }
-	//
+	public void escribeTuit(String tuit) {
+		try {
+			twitter.updateStatus(tuit);
+			System.out.println(tuit);
+			System.err.println("ha sido publicado");
+		} catch (TwitterException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 
-	public void programaTuit(String sdate, String tuit) {
-		Date date = FactoryDate(sdate);
-		long timeSet = date.getTime() - (new Date()).getTime();
+	public void programaTuit(ThreadPoolExecutor executor, String sdate, String tuit) {
+		long timeSet;
+		if(sdate.equals(""))
+			timeSet = 0;
+		else{
+			Date date = FactoryDate(sdate);
+			timeSet = date.getTime() - (new Date()).getTime();
+		}
 		System.out.println("se publicara en: " + timeSet + "milisegundos");
-		EscribeTuit escribeTuit = new EscribeTuit(twitter, tuit, timeSet);
+		HiloWriteTuit escribeTuit = new HiloWriteTuit(tuit, timeSet);
 		executor.execute(escribeTuit);
 	}
 	
@@ -120,26 +124,25 @@ public class TwitterMain {
 		
 		cal.set(year, month-1, date, hour, min, sec);
 		
-		System.out.println(cal.getTime());
-		
 		return cal.getTime();
 	}
 
 	public static void main(String ar[]) throws TwitterException {
 		BufferedReader lectorTeclado = new BufferedReader(
 				new InputStreamReader(System.in));
+		ThreadPoolExecutor executor = (ThreadPoolExecutor)Executors.newFixedThreadPool(10000);
 		String date;
 		String tuit;
 		for (;;) {
 			try {
 				TwitterMain twitter = new TwitterMain();
+				twitter.construirTwitter();
 				System.out
 						.println("Escribe cuando quieres que se publique el tuit con el formato dd/mm/yy hh:mm:ss");
 				date = lectorTeclado.readLine();
 				System.out.println("Escribe el tuit");
 				tuit = lectorTeclado.readLine();
-				twitter.construirTwitter();
-				twitter.programaTuit(date, tuit);
+				twitter.programaTuit(executor, date, tuit);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

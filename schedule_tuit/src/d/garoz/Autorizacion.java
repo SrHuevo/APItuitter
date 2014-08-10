@@ -25,8 +25,6 @@ public class Autorizacion {
 
 	public Twitter getTuitterTokenLess() {
 		ConfigurationBuilder configBuilder = new ConfigurationBuilder();
-		System.out.println(APIkey);
-		System.out.println(APIsecret);
 		configBuilder.setDebugEnabled(true).setOAuthConsumerKey(APIkey)
 				.setOAuthConsumerSecret(APIsecret);
 		return new TwitterFactory(configBuilder.build()).getInstance();
@@ -44,11 +42,11 @@ public class Autorizacion {
 					+ url);
 		} catch (Exception e) {
 		}
-		// Nos avisa de que introduciremos el PIN a continuación
+
 		System.out
 				.print("Introduce el PIN del navegador y pulsa intro.nn PIN: ");
-		// Leemos el PIN
-		return lectorTeclado.readLine();
+		String s = lectorTeclado.readLine();
+		return s;
 	}
 
 	public String[] getTokens() throws IOException {
@@ -56,7 +54,6 @@ public class Autorizacion {
 
 		RequestToken requestToken = null;
 		AccessToken accessToken = null;
-		do {
 
 			try {
 				requestToken = OAuthTwitter.getOAuthRequestToken();
@@ -72,7 +69,7 @@ public class Autorizacion {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		} while (accessToken == null);
+
 		return tokens;
 	}
 
